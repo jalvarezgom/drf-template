@@ -1,7 +1,6 @@
 from django.core.management import BaseCommand
 
 
-
 class Command(BaseCommand):
     help = "TODO"
 
@@ -15,4 +14,3 @@ class Command(BaseCommand):
         print("INICIO - CMD_TEST.PY")
 
         print("FIN - CMD_TEST.PY")
-

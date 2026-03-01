@@ -1,3 +1,20 @@
+# Custom files
+.env.dev
+.env.prod
+.env
+db.sqlite3
+.pdm*
+#files
+*.zip
+*.lock
+.idea
+token.*
+credentials*
+/share
+.pdm-python
+pdm.lock
+/.idea
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

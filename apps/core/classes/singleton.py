@@ -4,8 +4,8 @@ class SingletonMeta(type):
     possible methods include: base class, decorator, metaclass. We will use the
     metaclass because it is best suited for this purpose.
     """
-    _instances = {}
 
+    _instances = {}
 
     def __call__(cls, *args, **kwargs):
         """

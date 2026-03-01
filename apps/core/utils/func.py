@@ -14,7 +14,7 @@ def read_json_configuration(route):
 
 
 def check_key(data, key, stype="dict"):
-    if not key in data:
+    if key not in data:
         if stype == "dict":
             data[key] = collections.OrderedDict()
         elif stype == "list":

@@ -1,14 +1,15 @@
 #!/usr/bin/env python
 """Django's command-line utility for administrative tasks."""
+
 import os
 import sys
 
-from drf_template.environment import Environment
+from config.environment import Environment
 
 
 def main():
     """Run administrative tasks."""
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', Environment.get_enviroment_settings())
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", Environment.get_environment_settings(sys.argv))
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:
@@ -20,5 +21,5 @@ def main():
     execute_from_command_line(sys.argv)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
