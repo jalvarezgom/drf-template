@@ -28,6 +28,8 @@ class GoogleEmailManager(EmailManager):
                 self.__generate_client_file(project_id, client_id, client_secret)
                 flow = InstalledAppFlow.from_client_secrets_file("credentials.json", SCOPES)
                 creds = flow.run_local_server(port=58336)
+            if not os.path.exists("share"):
+                os.makedirs("share")
             with open(filepath, "wb") as token:
                 pickle.dump(creds, token)
         self.__service = build("gmail", "v1", credentials=creds)

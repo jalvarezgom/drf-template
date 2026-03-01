@@ -44,16 +44,16 @@ class S3StorageService:
     def is_file(self, key: str) -> bool:
         objs = list(self.__bucket.objects.filter(Prefix=key))
         if len(objs) == 0:
-            raise S3Exception(f'Not found any file with "{key}" key')
+            raise False
         return objs[0].key == key
 
     def is_dir(self, key: str) -> bool:
         objs = list(self.__bucket.objects.filter(Prefix=key))
         if len(objs) == 0:
-            raise S3Exception(f'Not found any dir with "{key}" key')
+            raise False
         return f"{key}/" in objs[0].key
 
-    def read_file(self, s3_filepath, mode: Literal["strIO", "bytes"] = "bytes") -> StringIO | bytes:
+    def read_file(self, s3_filepath, mode: Literal["str", "bytes"] = "bytes") -> StringIO | bytes:
         s3_file = self.__bucket.Object(s3_filepath).get()
         data = s3_file["Body"].read()
         if mode == "str":

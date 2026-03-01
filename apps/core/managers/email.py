@@ -7,9 +7,9 @@ from typing import List
 
 class EmailManager:
     status = False
-    _required_init_fields = set()
 
     def __init__(self, **xtra_args):
+        self._required_init_fields = set()
         self._required_init_fields.add("_username")
         self._required_init_fields.add("_send_emails")
         for field in self._required_init_fields:

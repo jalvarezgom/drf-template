@@ -34,7 +34,7 @@ class Environment:
 
     # API
     BASE_URL = "api/"
-    BASE_DIR = Path("__file__").parent.resolve()
+    BASE_DIR = Path(__file__).parent.resolve()
     SECRET_KEY = None
 
     # Logger
@@ -101,6 +101,8 @@ class Environment:
     @classmethod
     def __apply_custom_action_to_logger(cls):
         handlers = cls.LOGGER_CFG.get("handlers")
+        if handlers is None:
+            raise ValueError("[Environment] Logger configuration must include 'handlers' section")
         rotate_handler = handlers.get("rotate")
         if rotate_handler:
             log_name = cls.__get_log_filename()
@@ -119,8 +121,6 @@ class Environment:
 
     @classmethod
     def __check_execute_conditions(cls, ignore_email):
-        if ignore_email is None:
-            ignore_email = ignore_email
         cls._ignore_email = False if cls.ENV_MODE == EnvironmentMode.API else ignore_email
         cls.logger.info(f"[Environment] Ignore Email: {ignore_email}")
 
@@ -128,7 +128,7 @@ class Environment:
     def __prepare_email_connection(cls):
         if not cls._ignore_email and cls.SETTINGS.EMAIL.USE:
             cls.EMAIL_MANAGER = GoogleEmailManager(_username=Environment.SETTINGS.EMAIL.USER, _send_emails=Environment.SETTINGS.EMAIL.SEND_EMAILS)
-            cls.EMAIL_MANAGER.init_connection(client_id=cls.SETTINGS.EMAIL.CLIENT_ID, client_secret=cls.SETTINGS.EMAIL.CLIENT_SECRET)
+            cls.EMAIL_MANAGER.init_connection(project_id=cls.SETTINGS.EMAIL.PROJECT_ID, client_id=cls.SETTINGS.EMAIL.CLIENT_ID, client_secret=cls.SETTINGS.EMAIL.CLIENT_SECRET)
             cls.logger.info(f"[Environment] Email - Google {Environment.SETTINGS.EMAIL.USER} - Connection prepared")
         else:
             cls.logger.info("[Environment] Email - Environment prepared without Email connection")
