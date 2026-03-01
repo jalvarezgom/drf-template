@@ -2,6 +2,7 @@ from django.core.exceptions import (
     ValidationError,
 )
 
+
 class NumericValidator:
     def __init__(self, min_numeric=0):
         self.min_numeric = min_numeric

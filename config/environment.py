@@ -128,7 +128,9 @@ class Environment:
     def __prepare_email_connection(cls):
         if not cls._ignore_email and cls.SETTINGS.EMAIL.USE:
             cls.EMAIL_MANAGER = GoogleEmailManager(_username=Environment.SETTINGS.EMAIL.USER, _send_emails=Environment.SETTINGS.EMAIL.SEND_EMAILS)
-            cls.EMAIL_MANAGER.init_connection(project_id=cls.SETTINGS.EMAIL.PROJECT_ID, client_id=cls.SETTINGS.EMAIL.CLIENT_ID, client_secret=cls.SETTINGS.EMAIL.CLIENT_SECRET)
+            cls.EMAIL_MANAGER.init_connection(
+                project_id=cls.SETTINGS.EMAIL.PROJECT_ID, client_id=cls.SETTINGS.EMAIL.CLIENT_ID, client_secret=cls.SETTINGS.EMAIL.CLIENT_SECRET
+            )
             cls.logger.info(f"[Environment] Email - Google {Environment.SETTINGS.EMAIL.USER} - Connection prepared")
         else:
             cls.logger.info("[Environment] Email - Environment prepared without Email connection")

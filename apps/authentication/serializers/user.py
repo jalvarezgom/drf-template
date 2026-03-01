@@ -23,10 +23,12 @@ class UserBasicSerializer(serializers.ModelSerializer):
         model = User
         fields = ["first_name", "email", "groups", "is_staff"]
 
+
 class TokenSerializer(serializers.Serializer):
     access_token = serializers.CharField(read_only=True)
     refresh_token = serializers.CharField(read_only=True)
     expires_in = serializers.IntegerField(read_only=True)
+
 
 class UserLoginSerializer(serializers.ModelSerializer):
     groups = GroupSerializer(many=True)
@@ -35,6 +37,7 @@ class UserLoginSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ["first_name", "email", "groups", "is_staff", "token"]
+
 
 class UserSimpleSerializer(serializers.ModelSerializer):
     class Meta:

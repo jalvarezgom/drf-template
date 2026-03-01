@@ -1,6 +1,5 @@
 from http import HTTPStatus
 
-from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiResponse, OpenApiExample
 from rest_framework import serializers
 

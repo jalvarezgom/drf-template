@@ -7,8 +7,6 @@ import boto3
 
 from boto3.resources.base import ServiceResource
 
-from apps.core.classes.exceptions.s3 import S3Exception
-
 
 class S3StorageService:
     def __init__(self):

@@ -72,7 +72,11 @@ auth_viewset_swagger = extend_schema_view(
         description="Change password authenticated user",
         tags=[SwaggerTagEnum.AUTH],
         request=type("ChangePasswordSerializer", (serializers.Serializer,), {"password": serializers.CharField()}),
-        responses={HTTPStatus.ACCEPTED: OpenApiResponse(response=OpenApiTypes.OBJECT, description="Password changed", examples=[OpenApiExample("Response Example", value={})])},
+        responses={
+            HTTPStatus.ACCEPTED: OpenApiResponse(
+                response=OpenApiTypes.OBJECT, description="Password changed", examples=[OpenApiExample("Response Example", value={})]
+            )
+        },
     ),
     recover_password=extend_schema(
         summary="Recover password",
@@ -95,7 +99,11 @@ auth_viewset_swagger = extend_schema_view(
         description="Change password with OTP",
         tags=[SwaggerTagEnum.AUTH],
         request=type("ChangePasswordSerializerOTP", (serializers.Serializer,), {"password": serializers.CharField()}),
-        responses={HTTPStatus.ACCEPTED: OpenApiResponse(response=OpenApiTypes.OBJECT, description="Password changed", examples=[OpenApiExample("Response Example", value={})])},
+        responses={
+            HTTPStatus.ACCEPTED: OpenApiResponse(
+                response=OpenApiTypes.OBJECT, description="Password changed", examples=[OpenApiExample("Response Example", value={})]
+            )
+        },
     ),
 )
 

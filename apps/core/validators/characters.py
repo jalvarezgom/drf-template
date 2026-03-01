@@ -8,9 +8,7 @@ class SpecialCharactersValidator:
         self.min_special_characters = min_special_characters
 
     def validate(self, password, user=None):
-        special_characters_count = sum(
-            1 for char in password if not char.isalnum()
-        )
+        special_characters_count = sum(1 for char in password if not char.isalnum())
         if special_characters_count < self.min_special_characters:
             raise ValidationError(
                 f"This password must contain at least {self.min_special_characters} special character(s).",
@@ -35,6 +33,7 @@ class UppercaseValidator:
 
     def get_help_text(self):
         return f"This password must contain at least {self.min_uppercase} uppercase letter(s)."
+
 
 class LowercaseValidator:
     def __init__(self, min_lowercase=1):

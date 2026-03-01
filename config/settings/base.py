@@ -30,8 +30,8 @@ INSTALLED_APPS = [
     "rest_framework_json_api",
     "django.contrib.sites",
     # "rest_framework.authtoken", # if used native DRF token auth
-    "django_celery_beat", # Celery periodic tasks
-    "django_celery_results", # Celery task results
+    "django_celery_beat",  # Celery periodic tasks
+    "django_celery_results",  # Celery task results
     "actstream",  # Audit package
     "apps.authentication",
     "apps.task",
@@ -163,31 +163,29 @@ REST_FRAMEWORK = {
         "rest_framework.permissions.IsAuthenticated",
         "rest_framework.permissions.DjangoModelPermissions",
     ),
-    'EXCEPTION_HANDLER': 'rest_framework_json_api.exceptions.exception_handler',
-    'PAGE_SIZE': 10,
-    "DEFAULT_PAGINATION_CLASS": 'rest_framework_json_api.pagination.JsonApiPageNumberPagination',
+    "EXCEPTION_HANDLER": "rest_framework_json_api.exceptions.exception_handler",
+    "PAGE_SIZE": 10,
+    "DEFAULT_PAGINATION_CLASS": "rest_framework_json_api.pagination.JsonApiPageNumberPagination",
     "DEFAULT_PARSER_CLASSES": (
         "rest_framework_json_api.parsers.JSONParser",
-        'rest_framework.parsers.JSONParser',
+        "rest_framework.parsers.JSONParser",
         "rest_framework.parsers.FormParser",
         "rest_framework.parsers.MultiPartParser",
     ),
     "DEFAULT_RENDERER_CLASSES": (
-        'rest_framework_json_api.renderers.JSONRenderer',
-        'rest_framework_json_api.renderers.BrowsableAPIRenderer',
+        "rest_framework_json_api.renderers.JSONRenderer",
+        "rest_framework_json_api.renderers.BrowsableAPIRenderer",
     ),
-    'DEFAULT_METADATA_CLASS': 'rest_framework_json_api.metadata.JSONAPIMetadata',
+    "DEFAULT_METADATA_CLASS": "rest_framework_json_api.metadata.JSONAPIMetadata",
     "DEFAULT_FILTER_BACKENDS": (
         "rest_framework_json_api.filters.QueryParameterValidationFilter",
         "rest_framework_json_api.filters.OrderingFilter",
         "rest_framework_json_api.django_filters.backends.DjangoFilterBackend",
         "rest_framework.filters.SearchFilter",
     ),
-    'SEARCH_PARAM': 'filter[search]',
-    'TEST_REQUEST_RENDERER_CLASSES': (
-        'rest_framework_json_api.renderers.JSONRenderer',
-    ),
-    'TEST_REQUEST_DEFAULT_FORMAT': 'vnd.api+json',
+    "SEARCH_PARAM": "filter[search]",
+    "TEST_REQUEST_RENDERER_CLASSES": ("rest_framework_json_api.renderers.JSONRenderer",),
+    "TEST_REQUEST_DEFAULT_FORMAT": "vnd.api+json",
     "JSON_API_UNIFORM_EXCEPTIONS": True,
 }
 
@@ -233,7 +231,7 @@ SPECTACULAR_SETTINGS = {
 # Authentication
 ########################
 AUTH_USER_MODEL = "authentication.User"  # Variable para cambiar el modelo usado para la autenticacion
-TOKEN_EXPIRED_AFTER_SECONDS = Environment.SETTINGS.TOKEN_EXPIRED_AFTER_SECONDS #60 * 60  # 1 hour
+TOKEN_EXPIRED_AFTER_SECONDS = Environment.SETTINGS.TOKEN_EXPIRED_AFTER_SECONDS  # 60 * 60  # 1 hour
 AUTHENTICATION_BACKENDS = (
     # 'django.contrib.auth.backends.RemoteUserBackend', # Auth basada en usuario de Windows
     "apps.authentication.backends.email_password.EmailPasswordBackend",  # Auth basada en email/password
