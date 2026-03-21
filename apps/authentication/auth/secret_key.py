@@ -10,8 +10,12 @@ from django.utils.translation import gettext_lazy as _
 class SecretKeyAuthentication(BaseAuthentication):
     __backend = SecretKeyBackend
 
+    @staticmethod
+    def _get_secret_key(request):
+        return request.META.get("HTTP_X_SECRET_KEY", request.META.get("HTTP_SECRET_KEY", None))
+
     def authenticate(self, request):
-        secret_key = request.META.get("HTTP_SECRET_KEY", None)
+        secret_key = self._get_secret_key(request)
         if secret_key is None:
             return
         user = self.__backend().authenticate(request)

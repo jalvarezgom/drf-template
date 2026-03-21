@@ -58,7 +58,7 @@ class AuthViewSet(viewsets.GenericViewSet):
 
     @action(detail=False, methods=["post"], permission_classes=[])
     def login(self, request):
-        secret_key = self.request.META.get("HTTP_SECRET_KEY", None)
+        secret_key = request.META.get("HTTP_X_SECRET_KEY", request.META.get("HTTP_SECRET_KEY", None))
         if secret_key:
             response = self.__login_API(request)
         else:

@@ -4,8 +4,12 @@ from apps.authentication.models import User
 
 
 class SecretKeyBackend(ModelBackend):
+    @staticmethod
+    def _get_secret_key(request):
+        return request.META.get("HTTP_X_SECRET_KEY", request.META.get("HTTP_SECRET_KEY", None))
+
     def authenticate(self, request, **kwargs):
-        secret_key = request.META.get("HTTP_SECRET_KEY", None)
+        secret_key = self._get_secret_key(request)
         if secret_key is None:
             return
         try:

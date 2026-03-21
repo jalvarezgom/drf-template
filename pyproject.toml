@@ -25,13 +25,15 @@ dependencies = [
     "djangorestframework-jsonapi>=8.1.0",
     "django-guid>=3.5.2",
     "django-postgres-extra>=2.0.9",
-    "google-api-python-client>=2.188.0",
-    "google-auth-oauthlib>=1.2.4",
-    "boto3>=1.42.30",
+    # Google packages
+    #    "google-api-python-client>=2.188.0",
+    #    "google-auth-oauthlib>=1.2.4",
+    # S3 package
+    #    "boto3>=1.42.30",
     "psycopg>=3.3.2",
     "drf-spectacular-jsonapi>=0.5.2",
-    "django-celery-results>=2.6.0",
-    "django-activity-stream-with-events>=2.0.1", # Audit package
+    # Audit package
+    #    "django-activity-stream-with-events>=2.0.1",
 ]
 requires-python = "==3.13.*"
 readme = "README.md"

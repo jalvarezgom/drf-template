@@ -274,6 +274,7 @@ CORS_ALLOW_HEADERS = (
     "origin",
     "user-agent",
     "x-csrftoken",
+    "x-secret-key",
     "x-requested-with",
     "cache-control",
     "connection",

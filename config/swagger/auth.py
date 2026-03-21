@@ -113,4 +113,4 @@ class SecretKeyAuthenticationScheme(OpenApiAuthenticationExtension):
     name = "X-SECRET-KEY"
 
     def get_security_definition(self, auto_schema):
-        return {"type": "apiKey", "in": "meta", "name": "HTTP_SECRET_KEY"}
+        return {"type": "apiKey", "in": "header", "name": "X-Secret-Key"}

@@ -1,58 +1,84 @@
-Plantilla DRF — DRFTemplate
-===========================
+# DRFTemplate
 
-Proyecto arquetipo para construir APIs con Django + Django REST Framework. Integra soluciones y decisiones prácticas que facilitan arrancar proyectos productivos: configuración por entornos, autenticación personalizada, JSON:API, tareas en background, managers para servicios externos y utilidades comunes.
+Base template for building APIs with Django + Django REST Framework. It is designed both as a starting point for new projects and as an onboarding guide: it includes environment-based configuration, custom authentication, background task support, reusable managers for external services, and shared utilities.
 
-Principales características
-- Esquema OpenAPI mediante `drf-spectacular`
-- Autenticación personalizada: secret-key y tokens con expiración en `apps/authentication` (backends y autenticadores).
-- Tareas en background: soporte Celery + `django-celery-beat` y `django-celery-results`.
-- Managers reutilizables: Gmail (OAuth) y S3 en `apps/core/managers` para aislar integraciones externas.
-- Configuración por entorno: `config/environment.py` centraliza modo de ejecución, carga de settings y logger rotativo.
-- Utilidades compartidas: paginaciones, validadores, serializers base y router extendido (`apps/core`).
+## Key features
 
-Estructura relevante
-- `config/` — settings por entorno (`config/settings/*`), URLs y `config/environment.py`.
-- `apps/` — apps del dominio: `authentication`, `task`, `app_1`, `app_2`, `app_3`, `core`.
-- `pyproject.toml` — dependencias y scripts PDM (`cold_start`, `seeder`, `lint`, `test`).
-- `.env.example` — variables de entorno esperadas.
+- OpenAPI schema via `drf-spectacular`
+- Custom authentication: secret key and expiring tokens in `apps/authentication` (backends and authenticators)
+- Background tasks: Celery support with `django-celery-beat` and `django-celery-results`
+- Reusable managers: Gmail (OAuth) and S3 in `apps/core/managers` to isolate external integrations
+- Environment-based configuration: `config/environment.py` centralizes runtime mode, settings loading, and rotating logger setup
+- Shared utilities: pagination, validators, base serializers, and an extended router (`apps/core`)
 
-Detalles técnicos y convenciones
-- `AUTH_USER_MODEL` apunta a `authentication.User`.
-- `REST_FRAMEWORK` usa `JsonApiAutoSchema` y renderers/parsers de JSON:API; permisos por defecto requieren autenticación y permisos de modelo.
-- Backends incluidos: `email_password.EmailPasswordBackend` y `secret_key.SecretKeyBackend`.
-- Logging: configuraciones separadas en `config/loggers/dev.py` y `config/loggers/pro.py`, aplicadas por `Environment`.
+## Project structure
 
-Scripts y herramientas (PDM)
-- Ejecutar con `pdm run <script>` (o adapta a tu gestor):
-  - `cold_start` — `makemigrations`, `migrate`, `seeder` (inicia DB local con datos demo).
-  - `seeder` — ejecuta el comando `manage.py seeder` del proyecto.
-  - `lint` — `ruff check --fix` + `ruff format`.
-  - `test` — ejecuta `pytest` (configurado para usar `config.settings.test`).
+- `config/` — environment settings (`config/settings/*`), URLs, and `config/environment.py`
+- `apps/` — domain apps: `authentication`, `task`, `app_1`, `app_2`, `app_3`, `core`
+- `pyproject.toml` — dependencies and PDM scripts (`cold_start`, `seeder`, `lint`, `test`)
+- `.env.example` — expected environment variables
 
-Inicio rápido (local)
-1) Copia `.env.example` a `.env.dev` y completa valores (DB, SECRET_KEY, EMAIL, S3, REDIS, etc.).
-2) Instala dependencias: `pdm install` o `pip install -r requirements.txt`.
-3) Ejecuta migraciones: `python manage.py migrate`.
-4) Población inicial: `pdm run seeder` o `python manage.py seeder`.
-5) Levanta servidor: `python manage.py runserver`.
+## Technical details and conventions
 
-Ejecución y mantenimiento de Celery
-- Worker: `celery -A config worker -l INFO` (ajusta broker y backend en `.env`).
-- Beat: `celery -A config beat -l INFO` o usar `django-celery-beat` desde el admin para programar tareas.
+- `AUTH_USER_MODEL` points to `authentication.User`
+- `REST_FRAMEWORK` uses `drf-spectacular`; default permissions require authentication and model permissions
+- Included backends: `email_password.EmailPasswordBackend` and `secret_key.SecretKeyBackend`
+- Logging is split between `config/loggers/dev.py` and `config/loggers/pro.py`, and applied through `Environment`
 
-Pruebas y calidad
-- Tests: `pdm run test` o `pytest`.
-- Lint/format: `pdm run lint`.
+## Scripts and tools (PDM)
 
-Configuración por entorno y variables
-- `config/environment.py` define modos (API, TASK, DJANGO, TEST) y selecciona settings (dev/test/pro).
-- Revisa `.env.example` para variables críticas: `ENV`, `APP_NAME`, `SECRET_KEY`, `DB__*`, `EMAIL__*`, `S3__*`, `REDIS__*`, `TOKEN_EXPIRED_AFTER_SECONDS`.
+Run with `pdm run <script>` (or adapt to your package manager):
 
-Dónde mirar primero
-- `config/environment.py` — comportamiento del entorno y logger.
-- `config/settings/base.py` — comportamiento DRF/JSON:API y autenticación.
-- `config/urls.py` — montaje de routers y rutas de documentación.
-- `apps/authentication/` — usuarios, backends, autenticadores y vistas de auth.
-- `apps/core/` — paginaciones, router extendido y managers.
+- `cold_start` — `makemigrations`, `migrate`, `seeder` (boots a local DB with demo data)
+- `seeder` — runs the project's `manage.py seeder` command
+- `lint` — `ruff check --fix` + `ruff format`
+- `test` — runs `pytest` (configured to use `config.settings.test`)
 
+## Quick start (local)
+
+1. Copy `.env.example` to `.env.dev` and fill in values (DB, SECRET_KEY, EMAIL, S3, REDIS, etc.).
+2. Install dependencies: `pdm install` or `pip install -r requirements.txt`.
+3. Run migrations: `python manage.py migrate`.
+4. Load initial data: `pdm run seeder` or `python manage.py seeder`.
+5. Start the server: `python manage.py runserver`.
+
+## Onboarding a new project
+
+1. Rename the project and update `APP_NAME`, `ENV`, and `SECRET_KEY`.
+2. Review `config/settings/base.py` and define permissions, authentication, CORS, and active apps.
+3. Fill out `.env.example` with only the variables your deployment will actually use.
+4. Check `config/environment.py` to decide which external services are initialized.
+5. Review `config/urls.py` and remove routes or apps you do not need.
+6. Add your domain apps inside `apps/` and register their URLs, serializers, and tests.
+
+## Celery
+
+- Worker: `celery -A config worker -l INFO` (adjust broker and backend in `.env`)
+- Beat: `celery -A config beat -l INFO` or use `django-celery-beat` from the admin to schedule tasks
+
+## Testing and quality
+
+- Tests: `pdm run test` or `pytest`
+- Lint/format: `pdm run lint`
+
+## Environment configuration and variables
+
+- `config/environment.py` defines runtime modes (API, TASK, DJANGO, TEST) and selects settings (dev/test/pro)
+- See `.env.example` for critical variables: `ENV`, `APP_NAME`, `SECRET_KEY`, `DB__*`, `EMAIL__*`, `S3__*`, `REDIS__*`, `TOKEN_EXPIRED_AFTER_SECONDS`
+
+## What to customize first
+
+- Project name and `APP_NAME`
+- Environment variables
+- Database and credentials
+- Allowed CORS origins and domains
+- Optional integrations: email, S3, Redis, and Celery
+- Apps and endpoints you will actually use
+
+## Where to look first
+
+- `config/environment.py` — runtime behavior and logger setup
+- `config/settings/base.py` — DRF behavior and authentication
+- `config/urls.py` — router mounting and documentation routes
+- `apps/authentication/` — users, backends, authenticators, and auth views
+- `apps/core/` — pagination, extended router, and managers
