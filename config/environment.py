@@ -139,12 +139,16 @@ class Environment:
         else:
             from apps.core.managers.google_email import GoogleEmailManager
 
-            cls.EMAIL_MANAGER = GoogleEmailManager(_username=Environment.SETTINGS.EMAIL.USER, _send_emails=Environment.SETTINGS.EMAIL.SEND_EMAILS,)
+            cls.EMAIL_MANAGER = GoogleEmailManager(
+                _username=Environment.SETTINGS.EMAIL.USER,
+                _send_emails=Environment.SETTINGS.EMAIL.SEND_EMAILS,
+            )
             cls.EMAIL_MANAGER.init_connection(
-                project_id=cls.SETTINGS.EMAIL.PROJECT_ID, client_id=cls.SETTINGS.EMAIL.CLIENT_ID, client_secret=cls.SETTINGS.EMAIL.CLIENT_SECRET,
+                project_id=cls.SETTINGS.EMAIL.PROJECT_ID,
+                client_id=cls.SETTINGS.EMAIL.CLIENT_ID,
+                client_secret=cls.SETTINGS.EMAIL.CLIENT_SECRET,
             )
             cls.logger.info(f"[Environment] Email - Google {Environment.SETTINGS.EMAIL.USER} - Connection prepared")
-
 
     @classmethod
     def __prepare_s3_storage(cls):
@@ -152,6 +156,7 @@ class Environment:
             cls.logger.info("[Environment] S3 - Environment prepared without S3 connection")
         else:
             from apps.core.managers.s3 import S3StorageService
+
             s3 = S3StorageService()
             s3.init_connection(
                 access_id=cls.SETTINGS.S3.ACCESS_ID,
