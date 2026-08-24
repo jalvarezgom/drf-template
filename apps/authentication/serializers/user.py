@@ -11,9 +11,23 @@ class GroupSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
+    groups = GroupSerializer(many=True, read_only=True)
+
     class Meta:
         model = User
-        fields = "__all__"
+        fields = [
+            "id",
+            "email",
+            "username",
+            "first_name",
+            "last_name",
+            "is_active",
+            "is_staff",
+            "groups",
+            "date_joined",
+            "last_login",
+        ]
+        read_only_fields = fields
 
 
 class UserBasicSerializer(serializers.ModelSerializer):
@@ -49,6 +63,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ["email", "password", "first_name", "last_name"]
+        extra_kwargs = {"password": {"write_only": True}}
 
 
 class UserUpdateSerializer(serializers.ModelSerializer):

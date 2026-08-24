@@ -1,5 +1,5 @@
-from faker.generator import random
+import secrets
 
 
 def generate_otp_code():
-    return f"{random.randint(0, 999999):06}"
+    return f"{secrets.randbelow(1_000_000):06}"

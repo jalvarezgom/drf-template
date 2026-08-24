@@ -8,8 +8,8 @@ from config.environment import Environment
 class EmailService:
     @classmethod
     def send_email__recover_password(cls, locale: str, email: str, otp_code: str, first_name: str):
-        landing_url = f"{Environment.SETTINGS.FRONTEND_URL.format(locale=locale)}"
-        url = f"{Environment.SETTINGS.FRONTEND_URL.format(locale=locale)}/recover-password/{otp_code}"
+        landing_url = f"{Environment.SETTINGS.APP.FRONTEND_URL.format(locale=locale)}"
+        url = f"{Environment.SETTINGS.APP.FRONTEND_URL.format(locale=locale)}/recover-password/{otp_code}"
         raise NotImplementedError("Revise email sending method for specific project needs.")
         with override(locale):
             response = Environment.EMAIL_MANAGER.send_email(
@@ -37,8 +37,8 @@ class EmailService:
 
     @classmethod
     def send_email__welcome(cls, locale: str, email: str, first_name: str):
-        landing_url = f"{Environment.SETTINGS.FRONTEND_URL.format(locale=locale)}"
-        login_url = f"{Environment.SETTINGS.FRONTEND_URL.format(locale=locale)}/login"
+        landing_url = f"{Environment.SETTINGS.APP.FRONTEND_URL.format(locale=locale)}"
+        login_url = f"{Environment.SETTINGS.APP.FRONTEND_URL.format(locale=locale)}/login"
         raise NotImplementedError("Revise email sending method for specific project needs.")
         with override(locale):
             response = Environment.EMAIL_MANAGER.send_email(

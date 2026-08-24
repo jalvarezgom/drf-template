@@ -1,3 +1,5 @@
+import sentry_sdk
+
 from config.environment import Environment
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -8,7 +10,7 @@ BASE_URL = Environment.BASE_URL
 # Application Configuration
 ########################
 SECRET_KEY = Environment.SECRET_KEY
-DEBUG = Environment.SETTINGS.DEBUG
+DEBUG = Environment.SETTINGS.APP.DEBUG
 ALLOWED_HOSTS = []
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -42,6 +44,12 @@ INSTALLED_APPS = [
 SITE_ID = 1
 MIDDLEWARE = [
     "django_guid.middleware.guid_middleware",
+]
+if Environment.SETTINGS.APP.LOG_RESPONSES:
+    MIDDLEWARE.append("apps.core.middlewares.response_logging.ResponseLoggingMiddleware")
+if Environment.SETTINGS.APP.LOG_REQUESTS:
+    MIDDLEWARE.append("apps.core.middlewares.request_logging.RequestLoggingMiddleware")
+MIDDLEWARE += [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "corsheaders.middleware.CorsMiddleware",
@@ -50,7 +58,6 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    # "api.middleware.APILoggingMiddleware",
 ]
 ROOT_URLCONF = "config.urls"
 TEMPLATES = [
@@ -163,6 +170,18 @@ REST_FRAMEWORK = {
         "rest_framework.permissions.IsAuthenticated",
         "rest_framework.permissions.DjangoModelPermissions",
     ),
+    "DEFAULT_THROTTLE_CLASSES": (
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
+    ),
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "100/minute",
+        "user": "300/minute",
+        "login": "10/minute",
+        "register": "10/hour",
+        "recover_password": "5/hour",
+        "otp": "10/hour",
+    },
     "EXCEPTION_HANDLER": "rest_framework_json_api.exceptions.exception_handler",
     "PAGE_SIZE": 10,
     "DEFAULT_PAGINATION_CLASS": "rest_framework_json_api.pagination.JsonApiPageNumberPagination",
@@ -228,10 +247,38 @@ SPECTACULAR_SETTINGS = {
 
 
 ########################
+# CACHE
+########################
+if Environment.SETTINGS.REDIS.USE:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.redis.RedisCache",
+            "LOCATION": Environment.SETTINGS.REDIS.get_url(),
+            "KEY_PREFIX": Environment.SETTINGS.ENV,  # Diferenciar variables de entor (DEV/PRO)
+            "OPTIONS": {"decode_responses": False},
+        }
+    }
+else:
+    Environment.logger.info("[Environment] REDIS - Environment prepared without REDIS connection")
+
+########################
+# CELERY
+########################
+CELERY_BROKER_URL = Environment.SETTINGS.REDIS.get_url()
+CELERY_RESULT_BACKEND = "django-db"
+CELERY_RESULT_EXTENDED = True
+CELERY_CACHE_BACKEND = "django-cache"  # Environment.SETTINGS.REDIS.get_url()
+CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
+CELERY_BEAT_SYNC_EVERY = 1
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30 * 60
+
+########################
 # Authentication
 ########################
 AUTH_USER_MODEL = "authentication.User"  # Variable para cambiar el modelo usado para la autenticacion
-TOKEN_EXPIRED_AFTER_SECONDS = Environment.SETTINGS.TOKEN_EXPIRED_AFTER_SECONDS  # 60 * 60  # 1 hour
+TOKEN_EXPIRED_AFTER_SECONDS = Environment.SETTINGS.APP.TOKEN_EXPIRED_AFTER_SECONDS  # 60 * 60  # 1 hour
 AUTHENTICATION_BACKENDS = (
     # 'django.contrib.auth.backends.RemoteUserBackend', # Auth basada en usuario de Windows
     "apps.authentication.backends.email_password.EmailPasswordBackend",  # Auth basada en email/password
@@ -282,3 +329,29 @@ CORS_ALLOW_HEADERS = (
     "referer",
     "host",
 )
+
+########################
+# LOGGING + SENTRY
+########################
+LOGGING = Environment.LOGGER_CFG
+if Environment.SETTINGS.SENTRY.USE:
+    sentry_params = {}
+    if Environment.SETTINGS.SENTRY.USE_PII:
+        # Add data like request headers and IP for users,
+        # see https://docs.sentry.io/platforms/python/data-management/data-collected/ for more info
+        sentry_params["send_default_pii"] = Environment.SETTINGS.SENTRY.SEND_DEFAULT_PII
+    if Environment.SETTINGS.SENTRY.USE_TRACING:
+        # Set traces_sample_rate to 1.0 to capture 100%
+        # of transactions for tracing.
+        sentry_params["traces_sample_rate"] = Environment.SETTINGS.SENTRY.TRACES_SAMPLE_RATE
+    if Environment.SETTINGS.SENTRY.USE_PROFILING:
+        # Set profile_session_sample_rate to 1.0 to profile 100%
+        # of profile sessions.
+        sentry_params["profile_session_sample_rate"] = Environment.SETTINGS.SENTRY.PROFILE_SESSION_SAMPLE_RATE
+        # Set profile_lifecycle to "trace" to automatically
+        # run the profiler on when there is an active transaction
+        sentry_params["profile_lifecycle"] = Environment.SETTINGS.SENTRY.PROFILE_LIFECYCLE
+    sentry_sdk.init(
+        dsn=Environment.SETTINGS.SENTRY.DSN,
+        **sentry_params,
+    )

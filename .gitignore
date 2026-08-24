@@ -8,7 +8,7 @@ db.sqlite3
 *.zip
 *.lock
 .idea
-token.*
+/token.*
 credentials*
 /share
 .pdm-python

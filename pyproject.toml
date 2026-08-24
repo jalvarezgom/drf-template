@@ -9,7 +9,7 @@ dependencies = [
     "djangorestframework>=3.16.1",
     "pydantic-settings>=2.12.0",
     "Temporis>=1.0.7",
-    "psycopg-binary>=3.3.2",
+    "psycopg[binary]>=3.3.2",
     "gunicorn>=23.0.0",
     "drf-spectacular>=0.29.0",
     "django-sequences>=3.0",
@@ -30,12 +30,12 @@ dependencies = [
     #    "google-auth-oauthlib>=1.2.4",
     # S3 package
     #    "boto3>=1.42.30",
-    "psycopg>=3.3.2",
     "drf-spectacular-jsonapi>=0.5.2",
+    "sentry-sdk>=2.0.0",
     # Audit package
     #    "django-activity-stream-with-events>=2.0.1",
 ]
-requires-python = "==3.13.*"
+requires-python = ">=3.12"
 readme = "README.md"
 license = {text = "MIT"}
 

@@ -22,6 +22,12 @@ from apps.authentication.models.user_otp import UserOTP
 from apps.authentication.serializers.token import TokenSerializer
 from apps.authentication.serializers.user import UserBasicSerializer, UserRegisterSerializer, UserLoginSerializer
 from apps.authentication.tasks import send_email_recover_password
+from apps.authentication.throttling import (
+    LoginRateThrottle,
+    OTPRateThrottle,
+    RecoverPasswordRateThrottle,
+    RegisterRateThrottle,
+)
 from apps.core.audit.audit_actions import AuditActionsRepository
 from apps.core.utils.codes import generate_otp_code
 from config.swagger.auth import auth_viewset_swagger
@@ -36,7 +42,7 @@ class AuthViewSet(viewsets.GenericViewSet):
         user = request.user
         return Response(UserBasicSerializer(user).data, status=HTTPStatus.OK)
 
-    @action(detail=False, methods=["post"], permission_classes=[])
+    @action(detail=False, methods=["post"], permission_classes=[], throttle_classes=[RegisterRateThrottle])
     def register(self, request):
         email = request.data.get("email")
         serializer = UserRegisterSerializer(data=request.data)
@@ -56,7 +62,7 @@ class AuthViewSet(viewsets.GenericViewSet):
         AuditActionsRepository.User.signup(user)
         return self.login(request)
 
-    @action(detail=False, methods=["post"], permission_classes=[])
+    @action(detail=False, methods=["post"], permission_classes=[], throttle_classes=[LoginRateThrottle])
     def login(self, request):
         secret_key = request.META.get("HTTP_X_SECRET_KEY", request.META.get("HTTP_SECRET_KEY", None))
         if secret_key:
@@ -92,7 +98,10 @@ class AuthViewSet(viewsets.GenericViewSet):
     @action(detail=False, methods=["post"], url_path="refresh-token", permission_classes=[], authentication_classes=[])
     def refresh_token(self, request):
         refresh_token = request.data.get("refresh_token")
-        token_str = request.headers.get("Authorization").split(" ")[-1]
+        auth_header = request.headers.get("Authorization")
+        if not auth_header:
+            return Response({"detail": _("Authorization header is required")}, status=HTTPStatus.BAD_REQUEST)
+        token_str = auth_header.split(" ")[-1]
         try:
             token = TokenWithRefresh.objects.get(key=token_str, refresh_token=refresh_token)
         except TokenWithRefresh.DoesNotExist:
@@ -105,25 +114,33 @@ class AuthViewSet(viewsets.GenericViewSet):
 
     @action(detail=False, methods=["post"], permission_classes=[permissions.IsAuthenticated])
     def logout(self, request):
-        request.user.auth_token.delete()
+        TokenWithRefresh.objects.filter(user=request.user).delete()
         return Response(status=HTTPStatus.ACCEPTED)
 
     @action(detail=False, methods=["post"], url_path="change-password", permission_classes=[permissions.IsAuthenticated])
     def change_password(self, request):
         user = request.user
+        current_password = request.data.get("current_password")
         password = request.data.get("password")
+
+        if not current_password or not user.check_password(current_password):
+            return Response({"current_password": [_("Invalid current password")]}, status=HTTPStatus.BAD_REQUEST)
 
         is_valid, error = self.__is_password_valid(password)
         if not is_valid:
             return Response({"password": error}, status=HTTPStatus.BAD_REQUEST)
 
         user.set_password(password)
-        if not user.is_active:
-            user.is_active = True
         user.save()
         return Response(status=HTTPStatus.ACCEPTED)
 
-    @action(detail=False, methods=["post"], url_path="recover-password", permission_classes=[])
+    @action(
+        detail=False,
+        methods=["post"],
+        url_path="recover-password",
+        permission_classes=[],
+        throttle_classes=[RecoverPasswordRateThrottle],
+    )
     def recover_password(self, request):
         email = request.data.get("email")
         try:
@@ -143,8 +160,15 @@ class AuthViewSet(viewsets.GenericViewSet):
             time.sleep(random.uniform(0.4, 0.7))  # Avoid suspicious activity
         return Response({"detail": _("If the email exists, a password reset link will be sent")}, status=HTTPStatus.OK)
 
-    @action(detail=False, methods=["post"], url_path="change-password-otp/(?P<otp>[0-9]+)", permission_classes=[])
-    def change_password_otp(self, request, otp):
+    @action(
+        detail=False,
+        methods=["post"],
+        url_path="change-password-otp",
+        permission_classes=[],
+        throttle_classes=[OTPRateThrottle],
+    )
+    def change_password_otp(self, request):
+        otp = request.data.get("otp")
         try:
             user_otp = UserOTP.objects.get_by_otp(otp=otp)
         except UserOTP.DoesNotExist:

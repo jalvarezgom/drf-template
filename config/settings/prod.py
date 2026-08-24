@@ -1,9 +1,16 @@
-from config.settings.base import *
+from config.environment import Environment
+from config.environs.prod import EnvironSettingsProd
+
+if Environment._ENVIRON_SETTING is not EnvironSettingsProd:
+    Environment._ENVIRON_SETTING = EnvironSettingsProd
+    Environment.get_environment_settings()
+
+from config.settings.base import *  # noqa: E402
 
 ########################
 # Application Configuration
 ########################
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = Environment.SETTINGS.APP.get_allowed_hosts()
 INSTALLED_APPS = INSTALLED_APPS + []
 MIDDLEWARE = MIDDLEWARE + []
 
@@ -18,15 +25,13 @@ REST_FRAMEWORK = REST_FRAMEWORK
 # AUTHENTICATION_BACKENDS = (
 #     "django.contrib.auth.backends.ModelBackend",  # Auth basada en username/password
 # )
-TOKEN_EXPIRED_AFTER_SECONDS = 60 * 60 * 12  # 12h
 
 
 ########################
 # CORS
 ########################
-CORS_ORIGIN_ALLOW_ALL = True
-CORS_ORIGIN_WHITELIST = []
-CORS_ALLOWED_ORIGIN = ["*"]
+CORS_ORIGIN_ALLOW_ALL = False
+CORS_ALLOWED_ORIGINS = Environment.SETTINGS.APP.get_cors_allowed_origins()
 
 # SESSION_COOKIE_SAMESITE = None
 CORS_ALLOW_CREDENTIALS = True

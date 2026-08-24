@@ -42,13 +42,13 @@ class S3StorageService:
     def is_file(self, key: str) -> bool:
         objs = list(self.__bucket.objects.filter(Prefix=key))
         if len(objs) == 0:
-            raise False
+            return False
         return objs[0].key == key
 
     def is_dir(self, key: str) -> bool:
         objs = list(self.__bucket.objects.filter(Prefix=key))
         if len(objs) == 0:
-            raise False
+            return False
         return f"{key}/" in objs[0].key
 
     def read_file(self, s3_filepath, mode: Literal["str", "bytes"] = "bytes") -> StringIO | bytes:

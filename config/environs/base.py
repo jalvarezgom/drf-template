@@ -37,24 +37,23 @@ class EnvironSettingsRedis(EnvironSettingsBase):
     USE: Optional[bool] = False
     HOST: Optional[str] = None
     PORT: Optional[str] = None
-    USER: Optional[str] = ""
-    PASSWORD: Optional[str] = False
+    USER: Optional[str] = None
+    PASSWORD: Optional[str] = None
     SSL: Optional[bool] = False
 
     def get_url(self):
         redis_protocol = "rediss" if self.SSL else "redis"
-        redis_user_pass = f":{self.PASSWORD}"
-        url = f"{redis_protocol}://{redis_user_pass}@{self.HOST}:{self.PORT}"
-        return url
+        auth = f"{self.USER or ''}:{self.PASSWORD or ''}@" if (self.USER or self.PASSWORD) else ""
+        return f"{redis_protocol}://{auth}{self.HOST}:{self.PORT}"
 
 
 class EnvironSettingsS3(EnvironSettingsBase):
     USE: Optional[bool] = False
-    ACCESS_ID: str = None
-    ACCESS_KEY: str = None
-    SERVICE_NAME: str = None
-    REGION_NAME: str = None
-    BUCKET_NAME: str = None
+    ACCESS_ID: Optional[str] = None
+    ACCESS_KEY: Optional[str] = None
+    SERVICE_NAME: Optional[str] = None
+    REGION_NAME: Optional[str] = None
+    BUCKET_NAME: Optional[str] = None
 
 
 class EnvironSettingsSentry(EnvironSettingsBase):
@@ -63,9 +62,9 @@ class EnvironSettingsSentry(EnvironSettingsBase):
     USE_PII: Optional[bool] = False
     SEND_DEFAULT_PII: Optional[bool] = False
     USE_TRACING: Optional[bool] = False
-    TRACES_SAMPLE_RATE: Optional[float] = 0
+    TRACES_SAMPLE_RATE: Optional[float] = 0.0
     USE_PROFILING: Optional[bool] = False
-    PROFILE_SESSION_SAMPLE_RATE: Optional[float] = 0
+    PROFILE_SESSION_SAMPLE_RATE: Optional[float] = 0.0
     PROFILE_LIFECYCLE: Optional[str] = "trace"
 
 
@@ -78,16 +77,34 @@ class EnvironSettingsAudit(EnvironSettingsBase):
     SAVE_IP_ON_FAIL: Optional[bool] = False
 
 
+class EnvironSettingsApp(EnvironSettingsBase):
+    NAME: str
+    SECRET_KEY: str
+    DEBUG: bool
+    FRONTEND_URL: str
+    TOKEN_EXPIRED_AFTER_SECONDS: int
+
+    # Security (comma-separated values, e.g. "example.com,api.example.com")
+    ALLOWED_HOSTS: Optional[str] = ""
+    CORS_ALLOWED_ORIGINS: Optional[str] = ""
+
+    # Request/response tracing middlewares
+    LOG_REQUESTS: Optional[bool] = True
+    LOG_RESPONSES: Optional[bool] = True
+
+    def get_allowed_hosts(self) -> list[str]:
+        return [host.strip() for host in (self.ALLOWED_HOSTS or "").split(",") if host.strip()]
+
+    def get_cors_allowed_origins(self) -> list[str]:
+        return [origin.strip() for origin in (self.CORS_ALLOWED_ORIGINS or "").split(",") if origin.strip()]
+
+
 class EnvironSettings(EnvironSettingsBase):
     model_config = SettingsConfigDict(env_nested_delimiter="__")
 
     ENV: str
-    APP_NAME: str
-    SECRET_KEY: str
-    DEBUG: bool
+    APP: EnvironSettingsApp
     DIRECTORY: EnvironSettingsDirectories
-    FRONTEND_URL: str
-    TOKEN_EXPIRED_AFTER_SECONDS: int
 
     # BACK
     DB: Optional[EnvironSettingsDatabase] = None

@@ -7,6 +7,7 @@ from typing import Optional
 
 from config.environs.base import EnvironSettings
 from config.environs.dev import EnvironSettingsDev
+from config.environs.prod import EnvironSettingsProd
 from config.environs.test import EnvironSettingsTest
 from config.loggers.dev import LOGGER_DEV
 from config.loggers.pro import LOGGER_PRO
@@ -23,6 +24,11 @@ class Environment:
     # Settings
     SETTINGS: EnvironSettings = None
     _ENVIRON_SETTING = EnvironSettingsDev
+    _ENVIRON_MAP = {
+        "DEV": EnvironSettingsDev,
+        "PROD": EnvironSettingsProd,
+        "TEST": EnvironSettingsTest,
+    }
     LOAD_STATUS = False
 
     # Environment
@@ -49,6 +55,18 @@ class Environment:
         return cls.ENV == cls.__ENV_PRO
 
     @classmethod
+    def __require_settings(cls) -> EnvironSettings:
+        if cls.SETTINGS is None:
+            raise ValueError("[Environment] Settings is not set")
+        return cls.SETTINGS
+
+    @classmethod
+    def __require_logger(cls) -> Logger:
+        if cls.logger is None:
+            raise ValueError("[Environment] Logger is not set")
+        return cls.logger
+
+    @classmethod
     def get_environment_settings(cls, django_argv=None):
         cls.prepare(django_argv)
         settings = cls.__require_settings()
@@ -65,7 +83,7 @@ class Environment:
             cls.__prepare_s3_storage()
             settings = cls.__require_settings()
             logger = cls.__require_logger()
-            logger.info(f"[Environment] {settings.APP_NAME} is UP")
+            logger.info(f"[Environment] {settings.APP.NAME} is UP")
             logger.info(f"[Environment] Environment: {cls.ENV} | Mode: {cls.ENV_MODE}")
             logger.info(f"[Environment] Setting: {f'config.settings.{settings.__class__.__name__}'.lower()}")
             sentry_settings = getattr(settings, "SENTRY", None)
@@ -76,6 +94,12 @@ class Environment:
     def __prepare_environ(cls, django_argv):
         if cls._ENVIRON_SETTING is None:
             raise ValueError("[Environment] Environment Settings is not set")
+        # If nothing has explicitly selected an environment yet (e.g. config/settings/test.py),
+        # honor the OS-level ENV variable so manage.py/wsgi.py/asgi.py can boot straight into
+        # the right environment (e.g. ENV=PROD) instead of always defaulting to Dev.
+        if cls._ENVIRON_SETTING is EnvironSettingsDev:
+            os_env = os.environ.get("ENV", "").strip().upper()
+            cls._ENVIRON_SETTING = cls._ENVIRON_MAP.get(os_env, cls._ENVIRON_SETTING)
         command = "runserver" if (django_argv is None or len(django_argv) == 1) else django_argv[1]
         if command == "runserver":  # TODO: Adaptar para gunicurn
             cls.ENV_MODE = EnvironmentMode.API
@@ -87,7 +111,7 @@ class Environment:
             cls.ENV_MODE = EnvironmentMode.DJANGO
         cls.SETTINGS = cls._ENVIRON_SETTING()
         cls.DIRECTORIES = cls.SETTINGS.DIRECTORY
-        cls.SECRET_KEY = cls.SETTINGS.SECRET_KEY
+        cls.SECRET_KEY = cls.SETTINGS.APP.SECRET_KEY
         cls.ENV = cls.SETTINGS.ENV
 
     @classmethod
@@ -123,7 +147,7 @@ class Environment:
     @classmethod
     def __get_log_filename(cls):
         date = datetime.now()
-        log_filename = f"{cls.SETTINGS.APP_NAME}_{cls.ENV_MODE}_{date:%Y%m%d}"
+        log_filename = f"{cls.SETTINGS.APP.NAME}_{cls.ENV_MODE}_{date:%Y%m%d}"
         return log_filename
 
     @classmethod
